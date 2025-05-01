@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Data Center Cost Calculator - Estimate the total cost of building and operating your data center with this free online calculator. Calculate infrastructure, power, cooling, staffing, and maintenance costs.">
+    <meta name="keywords" content="data center, cost calculator, IT infrastructure, TCO, colocation, server room, data center planning, data center budget">
+    <title>Data Center Cost Calculator | Estimate Your Total Infrastructure Costs</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --border: #e2e8f0;
+            --success: #10b981;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .description {
+            color: var(--secondary);
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            text-align: center;
+        }
+        
+        .calculator {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        @media (min-width: 768px) {
+            .calculator {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .input-section, .results-section {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+        }
+        
+        .input-section h2, .results-section h2 {
+            margin-top: 0;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-group {
+            margin-bottom: 1rem;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+        
+        .input-group .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .input-group .slider {
+            flex-grow: 1;
+        }
+        
+        .input-group .slider-value {
+            min-width: 60px;
+            text-align: right;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--secondary);
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab-button:hover {
+            color: var(--primary);
+        }
+        
+        .tab-button.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        button.calculate {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1.5rem;
+            transition: background-color 0.2s;
+        }
+        
+        button.calculate:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+        }
+        
+        .results-table th {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--secondary);
+            font-weight: 500;
+        }
+        
+        .results-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .results-table tr:last-child td {
+            border-bottom: none;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .total-cost {
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: bold;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        
+        .note {
+            font-size: 0.875rem;
+            color: var(--secondary);
+            margin-top: 1.5rem;
+        }
+        
+        .faq {
+            margin-top: 4rem;
+        }
+        
+        .faq h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+        
+        .faq-item {
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .faq-question {
+            background-color: var(--card-bg);
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .faq-answer {
+            padding: 0 1.5rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .faq-answer.active {
+            padding: 1rem 1.5rem;
+            max-height: 500px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding: 2rem 0;
+            border-top: 1px solid var(--border);
+            color: var(--secondary);
+            font-size: 0.875rem;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-top: 2rem;
+        }
+        
+        @media print {
+            .container {
+                padding: 0;
+            }
+            
+            .input-section {
+                display: none;
+            }
+            
+            .results-section {
+                box-shadow: none;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Data Center Cost Calculator</h1>
+            <p class="description">Estimate the total cost of building and operating your data center with this comprehensive calculator. Input your requirements to get detailed cost breakdowns for infrastructure, power, cooling, staffing, and maintenance.</p>
+        </header>
+
+        <div class="calculator">
+            <div class="input-section">
+                <h2>Input Parameters</h2>
+                
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="infrastructure">Infrastructure</button>
+                    <button class="tab-button" data-tab="power">Power & Cooling</button>
+                    <button class="tab-button" data-tab="operations">Operations</button>
+                    <button class="tab-button" data-tab="network">Network</button>
+                </div>
+                
+                <div class="tab-content active" id="infrastructure">
+                    <div class="input-group">
+                        <label for="facility-size">Facility Size (sq ft)</label>
+                        <input type="number" id="facility-size" min="100" value="5000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="racks">Number of Racks</label>
+                        <input type="number" id="racks" min="1" value="50">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="servers-per-rack">Servers per Rack</label>
+                        <input type="number" id="servers-per-rack" min="1" value="20">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="server-cost">Average Server Cost ($)</label>
+                        <input type="number" id="server-cost" min="1000" value="5000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="rack-cost">Cost per Rack ($)</label>
+                        <input type="number" id="rack-cost" min="500" value="2000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="construction-cost">Construction Cost per sq ft ($)</label>
+                        <input type="number" id="construction-cost" min="100" value="300">
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="power">
+                    <div class="input-group">
+                        <label for="power-consumption">Average Power per Rack (kW)</label>
+                        <input type="number" id="power-consumption" min="1" value="5">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="power-cost">Cost per kWh ($)</label>
+                        <input type="number" id="power-cost" min="0.01" step="0.01" value="0.12">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="cooling-percentage">Cooling Power Overhead (%)</label>
+                        <div class="slider-container">
+                            <input type="range" id="cooling-percentage" class="slider" min="20" max="100" value="50">
+                            <span class="slider-value" id="cooling-percentage-value">50%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="pue">Power Usage Effectiveness (PUE)</label>
+                        <input type="number" id="pue" min="1.1" step="0.1" value="1.5">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="backup-percentage">Backup Power Capacity (%)</label>
+                        <div class="slider-container">
+                            <input type="range" id="backup-percentage" class="slider" min="50" max="200" value="100">
+                            <span class="slider-value" id="backup-percentage-value">100%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="generator-cost">Backup Generator Cost per kW ($)</label>
+                        <input type="number" id="generator-cost" min="500" value="800">
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="operations">
+                    <div class="input-group">
+                        <label for="staff-count">IT Staff Count</label>
+                        <input type="number" id="staff-count" min="1" value="10">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="annual-salary">Average Annual Salary ($)</label>
+                        <input type="number" id="annual-salary" min="30000" value="80000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="maintenance-rate">Annual Maintenance (% of Hardware Cost)</label>
+                        <div class="slider-container">
+                            <input type="range" id="maintenance-rate" class="slider" min="5" max="25" value="10">
+                            <span class="slider-value" id="maintenance-rate-value">10%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="software-cost">Annual Software Licensing ($)</label>
+                        <input type="number" id="software-cost" min="1000" value="150000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="refresh-cycle">Hardware Refresh Cycle (years)</label>
+                        <input type="number" id="refresh-cycle" min="1" max="10" value="5">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="security-cost">Security Systems ($)</label>
+                        <input type="number" id="security-cost" min="5000" value="100000">
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="network">
+                    <div class="input-group">
+                        <label for="network-redundancy">Network Redundancy Level</label>
+                        <select id="network-redundancy">
+                            <option value="1">N (Basic)</option>
+                            <option value="2" selected>N+1 (Standard)</option>
+                            <option value="3">2N (Full Redundancy)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="bandwidth">Internet Bandwidth (Gbps)</label>
+                        <input type="number" id="bandwidth" min="1" value="10">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="bandwidth-cost">Cost per Gbps per Month ($)</label>
+                        <input type="number" id="bandwidth-cost" min="100" value="1000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="network-equipment">Network Equipment Cost ($)</label>
+                        <input type="number" id="network-equipment" min="10000" value="200000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="cabling-cost">Cabling Cost per Rack ($)</label>
+                        <input type="number" id="cabling-cost" min="100" value="500">
+                    </div>
+                </div>
+                
+                <button class="calculate" id="calculate-button">Calculate Total Cost</button>
+            </div>
+            
+            <div class="results-section">
+                <h2>Cost Analysis</h2>
+                
+                <div class="total-cost">
+                    <span>Total Initial Cost:</span>
+                    <span id="total-initial-cost">$0</span>
+                </div>
+                
+                <div class="total-cost">
+                    <span>Annual Operating Cost:</span>
+                    <span id="total-operating-cost">$0</span>
+                </div>
+                
+                <h3>Cost Breakdown</h3>
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Initial Cost</th>
+                            <th>Annual Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Building & Construction</td>
+                            <td id="construction-initial">$0</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>Server Hardware</td>
+                            <td id="server-initial">$0</td>
+                            <td id="server-annual">$0</td>
+                        </tr>
+                        <tr>
+                            <td>Power & Cooling</td>
+                            <td id="power-initial">$0</td>
+                            <td id="power-annual">$0</td>
+                        </tr>
+                        <tr>
+                            <td>Network</td>
+                            <td id="network-initial">$0</td>
+                            <td id="network-annual">$0</td>
+                        </tr>
+                        <tr>
+                            <td>Staffing</td>
+                            <td>-</td>
+                            <td id="staff-annual">$0</td>
+                        </tr>
+                        <tr>
+                            <td>Software & Licenses</td>
+                            <td>-</td>
+                            <td id="software-annual">$0</td>
+                        </tr>
+                        <tr>
+                            <td>Maintenance</td>
+                            <td>-</td>
+                            <td id="maintenance-annual">$0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td id="total-initial">$0</td>
+                            <td id="total-annual">$0</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="chart-container" id="cost-chart">
+                    <p>Cost breakdown chart will appear here after calculation.</p>
+                </div>
+                
+                <div class="note">
+                    <p>Note: This calculator provides an estimate based on the parameters you've entered. Actual costs may vary based on location, specific requirements, and market conditions. We recommend consulting with data center professionals for detailed planning.</p>
+                </div>
+            </div>
+        </div>
+        
+        <section class="faq">
+            <h2>Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    What is included in the data center cost calculation?
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Our data center cost calculator includes the following major cost components:</p>
+                    <ul>
+                        <li>Building construction and facility costs</li>
+                        <li>Server and rack hardware</li>
+                        <li>Power infrastructure and consumption</li>
+                        <li>Cooling systems</li>
+                        <li>Backup power solutions</li>
+                        <li>Network equipment and connectivity</li>
+                        <li>IT staffing costs</li>
+                        <li>Software licensing</li>
+                        <li>Maintenance and support</li>
+                        <li>Security systems</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    What is PUE and why is it important?
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>PUE (Power Usage Effectiveness) is a metric that measures the efficiency of a data center's energy use. It's calculated by dividing the total facility power by the IT equipment power.</p>
+                    <p>A perfect PUE would be 1.0, meaning all energy is used by computing equipment with no overhead. Most modern data centers have a PUE between 1.2 and 1.5. The lower the PUE, the more efficient the data center, resulting in lower operational costs and environmental impact.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    How much does it cost to build a 1MW data center?
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>The cost to build a 1MW data center can vary significantly based on location, tier level, and specific requirements. However, as a general estimate:</p>
+                    <ul>
+                        <li>Tier I (basic): $10-13 million</li>
+                        <li>Tier II (redundant components): $11-14 million</li>
+                        <li>Tier III (concurrently maintainable): $18-20 million</li>
+                        <li>Tier IV (fault tolerant): $20-22 million</li>
+                    </ul>
+                    <p>These costs include building construction, power and cooling infrastructure, but exclude IT hardware costs. Use our calculator to get a more tailored estimate based on your specific requirements.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    How can I optimize my data center costs?
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Several strategies can help optimize data center costs:</p>
+                    <ul>
+                        <li><strong>Improve energy efficiency:</strong> Lower your PUE by implementing efficient cooling solutions and power management.</li>
+                        <li><strong>Virtualization:</strong> Maximize server utilization through virtualization to reduce hardware requirements.</li>
+                        <li><strong>Right-sizing:</strong> Ensure your capacity matches your actual needs to avoid overprovisioning.</li>
+                        <li><strong>Consider colocation:</strong> For smaller deployments, colocation often provides better economics than building your own facility.</li>
+                        <li><strong>Extend refresh cycles:</strong> Carefully evaluate if hardware really needs replacement or can be maintained longer.</li>
+                        <li><strong>Automation:</strong> Reduce staffing costs through automation of routine tasks.</li>
+                        <li><strong>Location selection:</strong> Choose locations with favorable power costs and climate conditions.</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    What are the differences between data center tiers?
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Data center tiers, as defined by the Uptime Institute, represent different levels of data center reliability and availability:</p>
+                    <ul>
+                        <li><strong>Tier I (Basic):</strong> 99.671% uptime, no redundancy, single path for power and cooling.</li>
+                        <li><strong>Tier II (Redundant Components):</strong> 99.741% uptime, some redundant components but still single path distribution.</li>
+                        <li><strong>Tier III (Concurrently Maintainable):</strong> 99.982% uptime, multiple power and cooling paths but only one active, can perform maintenance without shutdown.</li>
+                        <li><strong>Tier IV (Fault Tolerant):</strong> 99.995% uptime, multiple active power and cooling paths, redundant components, compartmentalized to prevent single points of failure.</li>
+                    </ul>
+                    <p>Higher tier levels provide greater reliability but also come with significantly higher costs for construction and operation.</p>
+                </div>
+            </div>
+        </section>
+        
+        <footer>
+            <p>&copy; 2025 Data Center Cost Calculator | Last Updated: May 2025</p>
+            <p>This calculator is for estimation purposes only. For professional data center planning and design, please consult with qualified experts.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Tab functionality
+        const tabButtons = document.querySelectorAll('.tab-button');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all tabs
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // Add active class to current tab
+                button.classList.add('active');
+                document.getElementById(button.dataset.tab).classList.add('active');
+            });
+        });
+        
+        // Slider value display
+        const sliders = document.querySelectorAll('.slider');
+        sliders.forEach(slider => {
+            const valueDisplay = document.getElementById(`${slider.id}-value`);
+            slider.addEventListener('input', () => {
+                valueDisplay.textContent = `${slider.value}%`;
+            });
+        });
+        
+        // FAQ toggle
+        const faqQuestions = document.querySelectorAll('.faq-question');
+        faqQuestions.forEach(question => {
+            question.addEventListener('click', () => {
+                const answer = question.nextElementSibling;
+                const isActive = answer.classList.contains('active');
+                
+                // Close all other answers
+                document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('active'));
+                document.querySelectorAll('.faq-question span').forEach(s => s.textContent = '+');
+                
+                // Toggle current answer
+                if (!isActive) {
+                    answer.classList.add('active');
+                    question.querySelector('span').textContent = '-';
+                }
+            });
+        });
+        
+        // Cost calculation function
+        document.getElementById('calculate-button').addEventListener('click', calculateCosts);
+        
+        function calculateCosts() {
+            // Get infrastructure inputs
+            const facilitySize = parseFloat(document.getElementById('facility-size').value);
+            const rackCount = parseInt(document.getElementById('racks').value);
+            const serversPerRack = parseInt(document.getElementById('servers-per-rack').value);
+            const serverCost = parseFloat(document.getElementById('server-cost').value);
+            const rackCost = parseFloat(document.getElementById('rack-cost').value);
+            const constructionCost = parseFloat(document.getElementById('construction-cost').value);
+            
+            // Get power inputs
+            const powerPerRack = parseFloat(document.getElementById('power-consumption').value);
+            const powerCost = parseFloat(document.getElementById('power-cost').value);
+            const coolingPercentage = parseInt(document.getElementById('cooling-percentage').value) / 100;
+            const pue = parseFloat(document.getElementById('pue').value);
+            const backupPercentage = parseInt(document.getElementById('backup-percentage').value) / 100;
+            const generatorCost = parseFloat(document.getElementById('generator-cost').value);
+            
+            // Get operations inputs
+            const staffCount = parseInt(document.getElementById('staff-count').value);
+            const annualSalary = parseFloat(document.getElementById('annual-salary').value);
+            const maintenanceRate = parseInt(document.getElementById('maintenance-rate').value) / 100;
+            const softwareCost = parseFloat(document.getElementById('software-cost').value);
+            const refreshCycle = parseInt(document.getElementById('refresh-cycle').value);
+            const securityCost = parseFloat(document.getElementById('security-cost').value);
+            
+            // Get network inputs
+            const networkRedundancy = parseInt(document.getElementById('network-redundancy').value);
+            const bandwidth = parseFloat(document.getElementById('bandwidth').value);
+            const bandwidthCost = parseFloat(document.getElementById('bandwidth-cost').value);
+            const networkEquipment = parseFloat(document.getElementById('network-equipment').value);
+            const cablingCost = parseFloat(document.getElementById('cabling-cost').value);
+            
+            // Calculate costs
+            // Construction costs
+            const totalConstructionCost = facilitySize * constructionCost;
+            
+            // Server hardware costs
+            const totalServerCount = rackCount * serversPerRack;
+            const totalServerCost = totalServerCount * serverCost;
+            const totalRackCost = rackCount * rackCost;
+            const totalHardwareCost = totalServerCost + totalRackCost;
+            
+            // Annual server replacement cost (assuming linear replacement over refresh cycle)
+            const annualServerReplacement = totalServerCost / refreshCycle;
+            
+            // Power costs
+            const totalPowerKW = rackCount * powerPerRack;
+            const coolingPowerKW = totalPowerKW * coolingPercentage;
+            const totalFacilityPowerKW = totalPowerKW * pue;
+            const annualPowerConsumptionKWh = totalFacilityPowerKW * 24 * 365;
+            const annualPowerCost = annualPowerConsumptionKWh * powerCost;
+            
+            // Backup power costs
+            const backupPowerKW = totalFacilityPowerKW * backupPercentage;
+            const backupGeneratorCost = backupPowerKW * generatorCost;
+            
+            // Network costs
+            const totalCablingCost = rackCount * cablingCost;
+            const adjustedNetworkEquipment = networkEquipment * networkRedundancy;
+            const totalNetworkInitialCost = adjustedNetworkEquipment + totalCablingCost;
+            const annualBandwidthCost = bandwidth * bandwidthCost * 12;
+            
+            // Staff & maintenance costs
+            const totalStaffCost = staffCount * annualSalary;
+            const hardwareMaintenanceCost = totalHardwareCost * maintenanceRate;
+            
+            // Total costs
+            const totalInitialCost = totalConstructionCost + totalHardwareCost + backupGeneratorCost + totalNetworkInitialCost + securityCost;
+            const totalAnnualCost = annualPowerCost + annualServerReplacement + totalStaffCost + softwareCost + hardwareMaintenanceCost + annualBandwidthCost;
+            
+            // Update results
+            document.getElementById('construction-initial').textContent = formatCurrency(totalConstructionCost);
+            document.getElementById('server-initial').textContent = formatCurrency(totalHardwareCost);
+            document.getElementById('server-annual').textContent = formatCurrency(annualServerReplacement);
+            document.getElementById('power-initial').textContent = formatCurrency(backupGeneratorCost);
+            document.getElementById('power-annual').textContent = formatCurrency(annualPowerCost);
+            document.getElementById('network-initial').textContent = formatCurrency(totalNetworkInitialCost);
+            document.getElementById('network-annual').textContent = formatCurrency(annualBandwidthCost);
+            document.getElementById('staff-annual').textContent = formatCurrency(totalStaffCost);
+            document.getElementById('software-annual').textContent = formatCurrency(softwareCost);
+            document.getElementById('maintenance-annual').textContent = formatCurrency(hardwareMaintenanceCost);
+            
+            document.getElementById('total-initial').textContent = formatCurrency(totalInitialCost);
+            document.getElementById('total-annual').textContent = formatCurrency(totalAnnualCost);
+            
+            document.getElementById('total-initial-cost').textContent = formatCurrency(totalInitialCost);
+            document.getElementById('total-operating-cost').textContent = formatCurrency(totalAnnualCost);
+            
+            // Create cost breakdown chart
+            createCostChart(
+                totalConstructionCost, 
+                totalHardwareCost, 
+                backupGeneratorCost, 
+                totalNetworkInitialCost, 
+                securityCost,
+                annualPowerCost, 
+                annualServerReplacement, 
+                totalStaffCost, 
+                softwareCost, 
+                hardwareMaintenanceCost, 
+                annualBandwidthCost
+            );
+        }
+        
+        // Format currency
+        function formatCurrency(value) {
+            return ' + value.toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+        }
+        
+        // Create cost breakdown chart
+        function createCostChart(construction, hardware, power, network, security, annualPower, annualServer, staff, software, maintenance, bandwidth) {
+            const initialData = [
+                { category: 'Construction', value: construction },
+                { category: 'Hardware', value: hardware },
+                { category: 'Power Systems', value: power },
+                { category: 'Network', value: network },
+                { category: 'Security', value: security }
+            ];
+            
+            const annualData = [
+                { category: 'Power & Cooling', value: annualPower },
+                { category: 'Hardware Replacement', value: annualServer },
+                { category: 'Staff', value: staff },
+                { category: 'Software', value: software },
+                { category: 'Maintenance', value: maintenance },
+                { category: 'Bandwidth', value: bandwidth }
+            ];
+            
+            // Sort data by value (descending)
+            initialData.sort((a, b) => b.value - a.value);
+            annualData.sort((a, b) => b.value - a.value);
+            
+            // Create chart HTML
+            const chartHTML = `
+                <div style="display: flex; flex-direction: column; height: 100%;">
+                    <h3 style="margin-top: 0; text-align: center;">Initial Costs Breakdown</h3>
+                    <div style="flex: 1; display: flex; align-items: stretch;">
+                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-around; padding-right: 10px;">
+                            ${initialData.map(item => `
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                        <span>${item.category}</span>
+                                        <span>${formatCurrency(item.value)}</span>
+                                    </div>
+                                    <div style="height: 20px; background-color: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                                        <div style="height: 100%; width: ${(item.value / initialData[0].value) * 100}%; background-color: var(--primary); border-radius: 4px;"></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <h3 style="text-align: center; margin-top: 20px;">Annual Costs Breakdown</h3>
+                    <div style="flex: 1; display: flex; align-items: stretch;">
+                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-around; padding-right: 10px;">
+                            ${annualData.map(item => `
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                        <span>${item.category}</span>
+                                        <span>${formatCurrency(item.value)}</span>
+                                    </div>
+                                    <div style="height: 20px; background-color: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                                        <div style="height: 100%; width: ${(item.value / annualData[0].value) * 100}%; background-color: var(--success); border-radius: 4px;"></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('cost-chart').innerHTML = chartHTML;
+        }
+        
+        // Calculate 5-year TCO
+        function calculateTCO(initialCost, annualCost, years = 5) {
+            return initialCost + (annualCost * years);
+        }
+        
+        // Initialize with default values
+        window.onload = function() {
+            calculateCosts();
+        };
