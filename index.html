@@ -203,6 +203,15 @@
             margin-left: 20px;
         }
         
+        .tier-description {
+            background-color: #f0f7ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+        
         .tooltip {
             position: relative;
             display: inline-block;
@@ -248,7 +257,23 @@
         <h1>Data Center Cost Calculator</h1>
         <p class="calculator-description">Estimate the total cost of ownership (TCO) for your data center infrastructure including hardware, power, cooling, space, and maintenance costs.</p>
         
-        <div class="calculator-form">
+        <div class="form-section" style="margin-bottom: 30px;">
+        <h2>Data Center Tier Selection</h2>
+        <div class="form-group">
+            <label for="dataCenterTier">Data Center Tier <span class="tooltip">?<span class="tooltiptext">The tier classification affects redundancy, availability, and cost</span></span></label>
+            <select id="dataCenterTier">
+                <option value="1">Tier I - Basic Capacity (99.671% uptime)</option>
+                <option value="2">Tier II - Redundant Components (99.741% uptime)</option>
+                <option value="3" selected>Tier III - Concurrently Maintainable (99.982% uptime)</option>
+                <option value="4">Tier IV - Fault Tolerant (99.995% uptime)</option>
+            </select>
+        </div>
+        <div id="tierDescription" class="tier-description">
+            <p><strong>Tier III:</strong> Features multiple power and cooling distribution paths with N+1 redundancy. Allows for concurrent maintenance without disruption. Annual downtime limited to 1.6 hours. Suitable for businesses requiring high availability.</p>
+        </div>
+    </div>
+
+    <div class="calculator-form">
             <div class="form-section">
                 <h2>Server Infrastructure</h2>
                 <div class="form-group">
@@ -437,6 +462,10 @@
                     <li>Maintenance costs are calculated as a percentage of total hardware cost</li>
                     <li>Labor costs include only direct IT personnel</li>
                     <li>Network equipment is amortized over 5 years</li>
+                    <li>Tier I: Basic capacity with minimal redundancy (99.671% uptime)</li>
+                    <li>Tier II: Redundant components with single distribution path (99.741% uptime)</li>
+                    <li>Tier III: Concurrent maintainability with N+1 redundancy (99.982% uptime)</li>
+                    <li>Tier IV: Fault tolerance with 2N/2N+1 systems (99.995% uptime)</li>
                 </ul>
             </div>
         </div>
@@ -455,6 +484,29 @@
             const maintenanceRateValue = document.getElementById('maintenanceRateValue');
             const contingencySlider = document.getElementById('contingency');
             const contingencyValue = document.getElementById('contingencyValue');
+            const tierSelect = document.getElementById('dataCenterTier');
+            const tierDescription = document.getElementById('tierDescription');
+            
+            // Data center tier descriptions
+            const tierDescriptions = {
+                "1": "<strong>Tier I:</strong> Basic infrastructure with single path for power and cooling, minimal redundancy. Annual downtime up to 28.8 hours (99.671% uptime). Suitable for small businesses with non-critical operations.",
+                "2": "<strong>Tier II:</strong> Single path for power and cooling with some redundant components. Annual downtime up to 22 hours (99.741% uptime). Good for SMBs requiring more reliability than Tier I.",
+                "3": "<strong>Tier III:</strong> Multiple power and cooling distribution paths with N+1 redundancy. Allows for concurrent maintenance without disruption. Annual downtime limited to 1.6 hours (99.982% uptime). Suitable for businesses requiring high availability.",
+                "4": "<strong>Tier IV:</strong> Fully redundant infrastructure with 2N or 2N+1 systems, fault tolerant against any single equipment failure. Annual downtime under 26 minutes (99.995% uptime). For mission-critical operations that require constant availability."
+            };
+
+            // Data center tier cost multipliers (relative to Tier I)
+            const tierCostMultipliers = {
+                "1": 1.0,    // Base cost
+                "2": 1.2,    // 20% premium over Tier I
+                "3": 1.5,    // 50% premium over Tier I
+                "4": 2.0     // 100% premium over Tier I
+            };
+            
+            // Update tier description when selection changes
+            tierSelect.addEventListener('change', function() {
+                tierDescription.innerHTML = "<p>" + tierDescriptions[this.value] + "</p>";
+            });
             
             // Update slider value displays
             serverLifespanSlider.addEventListener('input', function() {
@@ -474,6 +526,9 @@
             
             // Function to calculate all costs
             function calculateCosts() {
+                // Get selected tier and its cost multiplier
+                const selectedTier = document.getElementById('dataCenterTier').value;
+                const tierMultiplier = tierCostMultipliers[selectedTier];
                 // Get input values
                 const serverCount = parseFloat(document.getElementById('serverCount').value) || 0;
                 const serverCost = parseFloat(document.getElementById('serverCost').value) || 0;
@@ -494,35 +549,82 @@
                 const bandwidthCost = parseFloat(document.getElementById('bandwidthCost').value) || 0;
                 const contingency = parseFloat(document.getElementById('contingency').value) || 10;
                 
-                // Calculate component costs
+                // Calculate component costs - adjusted by tier multiplier
                 
                 // 1. Server hardware (amortized)
                 const totalServerCost = serverCount * serverCost;
-                const annualServerCost = totalServerCost / serverLifespan;
+                let annualServerCost = totalServerCost / serverLifespan;
+                
+                // Adjust hardware costs based on data center tier (redundancy requirements)
+                if (selectedTier >= 3) {
+                    // Tier III/IV require N+1 or 2N redundancy for critical hardware
+                    const redundancyFactor = selectedTier == 3 ? 1.3 : 1.8; // N+1 vs 2N
+                    annualServerCost *= redundancyFactor;
+                }
                 
                 // 2. Storage (amortized)
                 const totalStorageCost = storageCapacity * storageCostPerTB;
-                const annualStorageCost = totalStorageCost / serverLifespan;
+                let annualStorageCost = totalStorageCost / serverLifespan;
                 
-                // 3. Power and cooling
+                // Apply tier-based storage redundancy (RAID configurations differ by tier)
+                if (selectedTier >= 3) {
+                    const storageRedundancyFactor = selectedTier == 3 ? 1.4 : 1.8;
+                    annualStorageCost *= storageRedundancyFactor;
+                }
+                
+                // 3. Power and cooling - higher tiers have more redundant power systems
                 const dailyPowerConsumption = serverCount * powerConsumption * 24; // kWh per day
                 const annualPowerConsumption = dailyPowerConsumption * 365; // kWh per year
-                const annualPowerCost = annualPowerConsumption * powerCost * pue;
+                
+                // PUE adjustment based on tier (higher tiers have better efficiency but more redundant systems)
+                let tierAdjustedPUE = pue;
+                if (selectedTier == 4) {
+                    // Tier IV has fully redundant power paths
+                    tierAdjustedPUE *= 1.15;
+                } else if (selectedTier == 3) {
+                    // Tier III has N+1 redundancy
+                    tierAdjustedPUE *= 1.1;
+                }
+                
+                const annualPowerCost = annualPowerConsumption * powerCost * tierAdjustedPUE;
                 
                 // 4. Facility and networking
                 const annualRackCost = rackCount * rackCost * 12; // monthly to annual
                 const annualNetworkingCost = networkingCost / 5; // networking amortized over 5 years
-                const annualFacilityCost = annualRackCost + annualNetworkingCost;
                 
-                // 5. Labor and maintenance
-                const annualLaborCost = staffCount * staffCost;
+                // Higher tiers require more sophisticated networking with redundancy
+                const networkingTierMultiplier = selectedTier == 1 ? 1 : 
+                                               (selectedTier == 2 ? 1.2 : 
+                                               (selectedTier == 3 ? 1.5 : 1.8));
+                                               
+                const annualFacilityCost = annualRackCost + (annualNetworkingCost * networkingTierMultiplier);
+                
+                // 5. Labor and maintenance - higher tiers require more skilled staff and maintenance
+                const staffSkillMultiplier = selectedTier == 1 ? 1 : 
+                                           (selectedTier == 2 ? 1.1 : 
+                                           (selectedTier == 3 ? 1.25 : 1.4));
+                                           
+                const annualLaborCost = staffCount * staffCost * staffSkillMultiplier;
                 const hardwareCost = totalServerCost + totalStorageCost + networkingCost;
-                const annualMaintenanceCost = (hardwareCost * maintenanceRate) / 100;
+                
+                // Maintenance rate increases with tier complexity
+                const tierMaintenanceRateAdjustment = selectedTier == 1 ? 0 : 
+                                                    (selectedTier == 2 ? 2 : 
+                                                    (selectedTier == 3 ? 4 : 6));
+                const adjustedMaintenanceRate = maintenanceRate + tierMaintenanceRateAdjustment;
+                
+                const annualMaintenanceCost = (hardwareCost * adjustedMaintenanceRate) / 100;
                 const annualLaborMaintenanceCost = annualLaborCost + annualMaintenanceCost;
                 
                 // 6. Software and bandwidth
                 const annualBandwidthCost = bandwidth * bandwidthCost * 12; // monthly to annual
-                const annualSoftwareBandwidthCost = softwareCost + annualBandwidthCost;
+                
+                // Higher tiers may require more sophisticated software for monitoring/management
+                const softwareTierMultiplier = selectedTier == 1 ? 1 : 
+                                             (selectedTier == 2 ? 1.1 : 
+                                             (selectedTier == 3 ? 1.2 : 1.3));
+                
+                const annualSoftwareBandwidthCost = (softwareCost * softwareTierMultiplier) + annualBandwidthCost;
                 
                 // Calculate total cost before contingency
                 const subtotal = annualServerCost + annualStorageCost + annualPowerCost + 
@@ -559,4 +661,4 @@
         });
     </script>
 </body>
-</html>s
+</html>
